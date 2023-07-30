@@ -6,7 +6,7 @@ from unicodedata import normalize
 import base64
 import base58
 
-# Recovery Phrase Generation
+# Recovery Phrase Generation - set up by default for 24 word recovery phrase, with passphrase as optional
 def generate_recovery_phrase(bits:int=256, iterations:int=256, key_bytes:int=64, hash_name:str='sha512', passphrase:str="") -> str:
 
     with open("wordlist/english.txt", 'r') as file:
@@ -31,9 +31,9 @@ def generate_recovery_phrase(bits:int=256, iterations:int=256, key_bytes:int=64,
         idx = int(bits[i * 11:(i + 1) * 11], 2)
         phrase.append(wordlist[idx])
     
-    salt = str(phrase) + normalize('NFKD', passphrase)
+    
+    salt = str("".join(phrase)) + normalize('NFKD', passphrase)
     seed = hashlib.pbkdf2_hmac(hash_name, normalize('NFKD', " ".join(phrase)).encode(), salt.encode(), iterations, key_bytes)
-
 
     return {
         "phrase": " ".join(phrase),
@@ -48,9 +48,4 @@ def generate_recovery_phrase(bits:int=256, iterations:int=256, key_bytes:int=64,
         "seed_base58": base58.b58encode(seed).decode(),
         "seed_int": int.from_bytes(seed, 'big'),
     }
-
-test_phrase = generate_recovery_phrase()
-
-for x in test_phrase.keys():
-    print(f"{x} // {test_phrase[x]}")
 
